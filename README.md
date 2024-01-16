@@ -47,3 +47,40 @@ kubectl port-forward service/alpha-service 8080:80
 ```
 
 The application is now available on [http://localhost:8080](http://localhost:8080)
+
+## Add Monitoring stack
+
+### Install dependencies
+
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.2/cert-manager.yaml
+```
+
+### Installing Monitoring stack
+
+Kube-Prometheus-Stack is a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+```bash
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yml --namespace monitoring --create-namespace
+```
+
+This stack is installing principaly prometheus, grafana. You can access them by creating a portforward:
+
+```bash
+# Acccess Prometheus dashboard
+kubectl port-forward svc/prometheus-operated 9090:9090 --namespace monitoring
+
+# Acces Grafana dashboard
+kubectl port-forward svc/kube-prometheus-stack-grafana 3000:80 --namespace monitoring
+```
+
+Prometheus dashboard should be available on [http://localhost:9090](http://localhost:9090)
+
+Grafana dashboard should be available on [http://localhost:3000](http://localhost:3000)
+
+Grafana login: `admin/prom-operator`
