@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         app: alpha
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: 'observability/python-instrumentation'
     spec:
       containers:
         - name: alpha

@@ -1,0 +1,67 @@
+# https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/values.yaml
+
+# Valid values are "daemonset", "deployment", and "statefulset".
+mode: 'deployment'
+replicaCount: 2
+# topologySpreadConstraints:
+#   - maxSkew: 1
+#     topologyKey: topology.kubernetes.io/zone
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         app.kubernetes.io/instance: opentelemetry-collector
+#   - maxSkew: 1
+#     topologyKey: kubernetes.io/hostname
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         app.kubernetes.io/instance: opentelemetry-collector
+serviceMonitor:
+  # The service monitor by default scrapes the metrics port.
+  # The metrics port needs to be enabled as well.
+  enabled: true
+  metricsEndpoints:
+    - port: metrics
+      # interval: 15s
+  extraLabels:
+    release: kube-prometheus-stack
+ports:
+  metrics:
+    # The metrics port is disabled by default. However you need to enable the port
+    # in order to use the ServiceMonitor (serviceMonitor.enabled) or PodMonitor (podMonitor.enabled).
+    enabled: true
+    containerPort: 8888
+    servicePort: 8888
+    protocol: TCP
+# prometheusRule:
+#   enabled: true
+
+# Base collector configuration.
+# Supports templating. To escape existing instances of {{ }}, use {{` <original content> `}}.
+# For example, {{ REDACTED_EMAIL }} becomes {{` {{ REDACTED_EMAIL }} `}}.
+config:
+  exporters:
+    otlp/jaeger:
+      endpoint: jaeger-collector.observability.svc.cluster.local:4317
+      tls:
+        insecure: true
+    prometheusremotewrite:
+      endpoint: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write
+      tls:
+        insecure: true
+  connectors:
+    spanmetrics:
+  service:
+    pipelines:
+      metrics:
+        receivers:
+          - otlp
+          - spanmetrics
+        exporters:
+          - prometheusremotewrite
+      traces:
+        exporters:
+          - otlp/jaeger
+          - spanmetrics
+        receivers:
+          - otlp
