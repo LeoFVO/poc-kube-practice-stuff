@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alpha-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alpha
+  template:
+    metadata:
+      labels:
+        app: alpha
+    spec:
+      containers:
+        - name: alpha
+          image: leofvo/alpha:1.0.0
+          ports:
+            - containerPort: 8000
+          env:
+            - name: BETA_URL
+              value: 'http://beta-service:80'
+            - name: CHARLIE_URL
+              value: 'http://charlie-service:80'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alpha-service
+spec:
+  selector:
+    app: alpha
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000

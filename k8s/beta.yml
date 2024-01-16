@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beta-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beta
+  template:
+    metadata:
+      labels:
+        app: beta
+    spec:
+      containers:
+        - name: beta
+          image: leofvo/beta:1.0.0
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: beta-service
+spec:
+  selector:
+    app: beta
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000

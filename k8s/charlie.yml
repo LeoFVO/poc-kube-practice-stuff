@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: charlie-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: charlie
+  template:
+    metadata:
+      labels:
+        app: charlie
+    spec:
+      containers:
+        - name: charlie
+          image: leofvo/charlie:1.0.0
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: charlie-service
+spec:
+  selector:
+    app: charlie
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
