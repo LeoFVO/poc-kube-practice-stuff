@@ -22,6 +22,25 @@ spec:
               value: 'http://beta-service:80'
             - name: CHARLIE_URL
               value: 'http://charlie-service:80'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '100m'
+            limits:
+              memory: '512Mi'
+              cpu: '200m'
 ---
 apiVersion: v1
 kind: Service

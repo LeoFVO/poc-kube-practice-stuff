@@ -23,6 +23,10 @@ async def get_sentence():
     except httpx.RequestError as e:
         raise HTTPException(status_code=500, detail=f"Error communicating with services: {str(e)}")
 
+@app.get("/health")
+def read_health():
+    return {"status": "healthy"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
