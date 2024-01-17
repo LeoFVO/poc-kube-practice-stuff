@@ -11,6 +11,10 @@ spec:
     metadata:
       labels:
         app: alpha
+      annotations:
+        # https://www.consul.io/docs/platf orm/k8s/run.html#annotations
+        'consul.hashicorp.com/connect-inject': 'true'
+        'consul.hashicorp.com/connect-service-upstreams': 'beta-service:50100,charlie-service:50200'
     spec:
       containers:
         - name: alpha
@@ -19,9 +23,9 @@ spec:
             - containerPort: 8000
           env:
             - name: BETA_URL
-              value: 'http://beta-service:80'
+              value: 'http://localhost:50100'
             - name: CHARLIE_URL
-              value: 'http://charlie-service:80'
+              value: 'http://localhost:50200'
           livenessProbe:
             httpGet:
               path: /health

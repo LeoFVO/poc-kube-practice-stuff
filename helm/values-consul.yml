@@ -1,0 +1,37 @@
+# https://developer.hashicorp.com/consul/docs/k8s/helm#configuration-values
+# https://github.com/hashicorp/consul-helm/blob/master/values.yaml
+
+global:
+  name: consul
+  tls:
+    enabled: true
+  peering:
+    enabled: false
+  acls:
+    manageSystemACLs: true
+
+server:
+  replicas: 1
+  bootstrapExpect: 1
+  extraConfig: |
+    {
+      "log_level": "TRACE"
+    }
+
+connectInject:
+  enabled: true
+  default: false
+  # cni:
+  #   enabled: true
+  #   logLevel: info
+  #   cniBinDir: '/opt/cni/bin'
+  #   cniNetDir: '/etc/cni/net.d'
+
+meshGateway:
+  enabled: false
+
+controller:
+  enabled: true
+
+ui:
+  enabled: true
