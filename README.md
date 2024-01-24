@@ -47,3 +47,34 @@ kubectl port-forward service/alpha-service 8080:80
 ```
 
 The application is now available on [http://localhost:8080](http://localhost:8080)
+
+## Kyverno
+
+### Setup with helm
+
+```bash
+helm repo add kyverno https://kyverno.github.io/kyverno/
+helm repo update
+```
+
+### Install kyverno in HA mode
+
+```bash
+helm install kyverno kyverno/kyverno -n kyverno --create-namespace --values ./helm/values-kyverno.yml
+```
+
+### Install policies
+
+Kyverno allow us to create policies using Custom Resource Definitions (CRDs). We can create a CRD to install policies.
+
+```bash
+k apply -f k8s/CRDs/kyverno
+```
+
+### Test policies
+
+A folder with some malicious yaml files is available in the tests folder. You can apply them to test the policies.
+
+```bash
+kubectl apply -f tests/
+```
