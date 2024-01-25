@@ -47,3 +47,105 @@ kubectl port-forward service/alpha-service 8080:80
 ```
 
 The application is now available on [http://localhost:8080](http://localhost:8080)
+
+## Add service Mesh (Consul)
+
+```bash
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo update
+```
+
+```bash
+helm upgrade --install consul hashicorp/consul --create-namespace --namespace consul --values helm/values-consul.yml
+```
+
+Access Consul UI:
+
+```bash
+kubectl port-forward service/consul-server --namespace consul 8500:8500
+```
+
+### Add consul sidecar
+
+After installing consul, we need to change the configuration settings to annotates where should sidecar be deployed.
+
+_Note:_
+We could bypass this steps by settings the default values in the helm chart.
+
+```yml
+connectInject:
+  enabled: true # Enable automatic injection of the Consul Connect sidecar
+  default: true # Automatically inject sidecar on all pods
+```
+
+But, we want to be able to choose which service should be injected. So we will use annotations.
+
+```yml
+metadata:
+  ...
+  annotations:
+    # https://www.consul.io/docs/platf orm/k8s/run.html#annotations
+    'consul.hashicorp.com/connect-inject': 'true'
+    'consul.hashicorp.com/connect-service-upstreams': 'beta-service:50100,charlie-service:50200'
+```
+
+As the sidecar is now routing request, we have to make our application send request to the sidecar instead of the service directly.
+
+For this, we send traffic on the localhost port of our choice, that have to be the port where the service is listening, and of courses, must be unique.
+
+```yml
+env:
+  - name: BETA_URL
+    value: 'http://localhost:50100'
+  - name: CHARLIE_URL
+    value: 'http://localhost:50200'
+```
+
+After making change on your deployment and service, you will have to redeploy.
+
+```bash
+kubectl apply -f ./k8s
+```
+
+At this steps, all our services can communicate with each other using the sidecar.
+
+### Restrict communication between services
+
+Now, we want to restrict communication between services. For this, we will use intentions.
+Restricting communication between services will empower our security policies by instauring a zero trust model.
+
+By default, consul allow all services to communicate with each other.
+
+We need to update our consul installation to change this behavior.
+
+```yml
+global:
+  ...
+  acls:
+    manageSystemACLs: true
+```
+
+Also, we will change this behavior by adding the following intention:
+
+```yml
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: deny-all
+spec:
+  destination:
+    name: '*'
+  sources:
+    - name: '*'
+      action: deny
+```
+
+```bash
+kubectl apply -f ./k8s/consul/deny-all-communications.yml
+```
+
+Now, no services can communicate with each other. We will now allow communication from alpha to beta and charlie.
+
+```bash
+kubectl apply -f ./k8s/consul/allow-alpha-to-others.yml
+```

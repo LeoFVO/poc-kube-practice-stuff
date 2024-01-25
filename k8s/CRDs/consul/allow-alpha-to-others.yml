@@ -1,0 +1,25 @@
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: alpha-to-beta
+spec:
+  destination:
+    name: beta-service
+  sources:
+    - name: alpha-service
+      action: allow
+      description: Allow alpha to communicate with beta.
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: alpha-to-charlie
+spec:
+  destination:
+    name: charlie-service
+  sources:
+    - name: alpha-service
+      action: allow
+      description: Allow alpha to communicate with charlie.
+---
+
