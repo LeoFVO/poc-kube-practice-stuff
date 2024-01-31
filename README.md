@@ -47,3 +47,26 @@ kubectl port-forward service/alpha-service 8080:80
 ```
 
 The application is now available on [http://localhost:8080](http://localhost:8080)
+
+## Installing Istio service mesh
+
+### Setup with helm
+
+```bash
+helm repo add istio https://istio-release.storage.googleapis.com/charts
+helm repo update
+```
+
+```bash
+kubectl create namespace istio-system
+helm install istio-base istio/base -n istio-system --set defaultRevision=default
+helm install istiod istio/istiod -n istio-system --wait
+```
+
+Now, Istio is installed in your clsuter.
+
+### Installing sidecar on applications
+
+```bash
+kubectl label namespace default istio-injection=enabled
+```
